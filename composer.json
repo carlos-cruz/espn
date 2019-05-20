@@ -1,0 +1,21 @@
+{
+    "name": "carlos-cruz/espn",
+    "description": "Get the list of any league soccer fixtures from ESPN in JSON Responses",
+    "keywords": ["api", "espn", "soccer", "fixtures"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Carlos Cruz",
+            "email": "jccs24@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Espn\\": "src/"
+        }
+    },
+    "require": {
+    	"simple-html-dom/simple-html-dom": "*"
+    },
+    "minimum-stability": "stable"
+}
