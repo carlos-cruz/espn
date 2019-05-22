@@ -1,6 +1,6 @@
 <?php namespace CarlosCruz\Espn;
 
-require_once 'vendor/simple-html-dom/simple-html-dom/simple_html_dom.php';
+require_once '../vendor/simple-html-dom/simple-html-dom/simple_html_dom.php';
 
 use CarlosCruz\Espn\Game;
 use CarlosCruz\Espn\Team;
