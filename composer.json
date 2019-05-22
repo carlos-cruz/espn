@@ -11,10 +11,11 @@
     ],
     "autoload": {
         "psr-4": {
-            "Espn\\": "src/"
+            "CarlosCruz\\Espn\\": "src/Espn/"
         }
     },
     "require": {
+        "php": ">=7.0",
     	"simple-html-dom/simple-html-dom": "*"
     },
     "minimum-stability": "stable"
