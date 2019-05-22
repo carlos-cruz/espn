@@ -1,7 +1,7 @@
-<?php namespace Espn;
+<?php namespace CarlosCruz\Espn;
 
-use Espn\Team;
-use Espn\Interfaces\Jsonable;
+use CarlosCruz\Espn\Team;
+use CarlosCruz\Espn\Interfaces\Jsonable;
 
 /**
  * ESPN Game

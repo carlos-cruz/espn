@@ -1,4 +1,4 @@
-<?php namespace Espn\Interfaces;
+<?php namespace CarlosCruz\Espn\Interfaces;
 
 
 interface Jsonable

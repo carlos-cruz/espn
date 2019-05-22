@@ -1,15 +1,15 @@
-<?php namespace Espn;
+<?php namespace CarlosCruz\Espn;
 
 require_once 'vendor/simple-html-dom/simple-html-dom/simple_html_dom.php';
 
-use Espn\Game;
-use Espn\Team;
+use CarlosCruz\Espn\Game;
+use CarlosCruz\Espn\Team;
 
 /**
  * Espn Class
  * 
- * @author Carlos Cruz <jccs24@gmail.com>
- * 
+ * @author  Carlos Cruz <jccs24@gmail.com>
+ * @license http://www.opensource.org/licenses/mit-license.html MIT License
  */
 class Espn
 {
@@ -34,8 +34,12 @@ class Espn
         }
     }
 
-
-    private function loadInfo()
+    /**
+     * Loads the Espn page
+     * 
+     * @return none
+     */
+    private function _loadInfo()
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
@@ -53,6 +57,11 @@ class Espn
         $this->html = $html->load($str);
     }
 
+    /**
+     * Gets fixtures for the provided league
+     * 
+     * @return array
+     */
     public function getFixtures(): array
     {
         //Sets the url to load
@@ -64,12 +73,12 @@ class Espn
         }
 
         //Loads the html
-        $this->loadInfo();
+        $this->_loadInfo();
 
         $games = [];
         foreach ($this->html->find('table.schedule') as $fixture) {
             foreach ($fixture->find('tbody tr') as $game) {
-                if ($game->parent->tag == "tbody" && count($game->find('td a.team-name')) > 0) {
+                if ($game->parent->tag == "tbody" && count($game->find('td a.team-name')) > 0){
                     $home = new Team($game->find('td a.team-name span', 0)->innertext);
                     $away = new Team($game->find('td a.team-name span', 1)->innertext);
                     $time = @$game->find('td', 2)->{'data-date'};
@@ -86,10 +95,17 @@ class Espn
         return $games;
     }
 
+    /**
+     * Gets the information of a single match
+     * 
+     * @param int $matchid An Espn match id
+     * 
+     * @return Game
+     */
     public function getMatch(int $matchid): Game
     {
         $this->url = self::URLMATCH.$matchid;
-        $this->loadInfo();
+        $this->_loadInfo();
         
         $home = new Team(trim($this->html->find('div.sm-score div.away div.team__content div.team-container div.team-info > span.short-name', 0)->innertext));
         $away = new Team(trim($this->html->find('div.sm-score div.home div.team__content div.team-container div.team-info > span.short-name', 0)->innertext));

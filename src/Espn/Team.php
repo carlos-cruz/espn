@@ -1,4 +1,4 @@
-<?php namespace Espn;
+<?php namespace CarlosCruz\Espn;
 
 /**
  * ESPN Team
