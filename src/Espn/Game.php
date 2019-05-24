@@ -38,18 +38,18 @@ class Game implements Jsonable
         String $espnid, 
         String $score = null, 
         String $stadium = null, 
-        String $state = null
+        String $state = null,
+        String $league = null
     ) {
         $this->hometeam = $home;
         $this->awayteam = $away;
         $this->time = $time;
-        $this->espnId = strrchr($espnid, '=') ? 
-        substr(strrchr($espnid, '='), 1, 10) : $espnid;
+        $this->espnId = $espnid;
 
         if ($score!=null && $score != "v") {
             $sc = explode('-', $score);
-            $this->score_home = trim($sc[0]);
-            $this->score_away = trim($sc[1]);
+            $this->score_home = (int) trim($sc[0]);
+            $this->score_away = (int) trim($sc[1]);
         }
 
         if ($stadium!=null) {
@@ -58,6 +58,9 @@ class Game implements Jsonable
 
         if ($state != null) {
             $this->state = $state;
+        }
+        if ($league != null) {
+            $this->league = $league;
         }
     }
 

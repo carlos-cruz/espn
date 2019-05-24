@@ -1,9 +1,9 @@
 <?php namespace CarlosCruz\Espn;
 
-require_once '../vendor/simple-html-dom/simple-html-dom/simple_html_dom.php';
 
 use CarlosCruz\Espn\Game;
 use CarlosCruz\Espn\Team;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Espn Class
@@ -51,10 +51,8 @@ class Espn
         $str = curl_exec($curl);
         curl_close($curl);
 
-        $html = new \simple_html_dom();
-
         // Load HTML from a string
-        $this->html = $html->load($str);
+        $this->html = new Crawler($str); 
     }
 
     /**
@@ -75,22 +73,27 @@ class Espn
         //Loads the html
         $this->_loadInfo();
 
-        $games = [];
-        foreach ($this->html->find('table.schedule') as $fixture) {
-            foreach ($fixture->find('tbody tr') as $game) {
-                if ($game->parent->tag == "tbody" && count($game->find('td a.team-name')) > 0){
-                    $home = new Team($game->find('td a.team-name span', 0)->innertext);
-                    $away = new Team($game->find('td a.team-name span', 1)->innertext);
-                    $time = @$game->find('td', 2)->{'data-date'};
-                    $espnid = $game->find('td span.record a', 0)->href;
-                    $score = $game->find('td span.record a', 0)->innertext;
-                    $stadium = @$game->find('td.schedule-location', 0)->innertext;
 
-                    $game = new Game($home, $away, $time, $espnid, $score, $stadium);
-                    $games[] = $game->toArray();
-                }
-            }
-        }
+        $games = $this->html->filter('.table-caption')->each(function(Crawler $fixture, $i){
+            
+            $resp['group'] = $fixture->text();
+
+            $games = $fixture->parents()->filter('table.schedule')->eq($i);
+            
+            $resp['games'] = $games->filter('tbody tr')->each(function(Crawler $game, $j) use ($league) {
+                //$league = $game->parents()->parents()->parents()->parents()->filter('h2.table-caption')->eq($i)->text();
+                $home = new Team($game->filter('td a.team-name span')->first()->text());
+                $away = new Team($game->filter('td a.team-name span')->last()->text());
+                $time = $game->filter('td')->eq(2)->attr('data-date');
+                $espnid = (int) filter_var($game->filter('td span.record a')->eq(0)->attr('href'), FILTER_SANITIZE_NUMBER_INT);
+                $score = $game->filter('td span.record a')->first()->text();
+                $stadium = ($game->filter('td.schedule-location')->count()) ? $game->filter('td.schedule-location')->first()->text():null;
+
+                $game = new Game($home, $away, $time, $espnid, $score, $stadium);
+                return $game->toArray();
+            });
+            return $resp;
+        });
 
         return $games;
     }
@@ -107,20 +110,18 @@ class Espn
         $this->url = self::URLMATCH.$matchid;
         $this->_loadInfo();
         
-        $home = new Team(trim($this->html->find('div.sm-score div.away div.team__content div.team-container div.team-info > span.short-name', 0)->innertext));
-        $away = new Team(trim($this->html->find('div.sm-score div.home div.team__content div.team-container div.team-info > span.short-name', 0)->innertext));
-        $home->logo = trim($this->html->find('div.sm-score div.away div.team__content div.team-container div.team-info-logo a.logo picture img', 0)->attr['src']);
-        $away->logo = trim($this->html->find('div.sm-score div.home div.team__content div.team-container div.team-info-logo a.logo picture img', 0)->attr['src']);
+        $home = new Team(trim($this->html->filter('div.sm-score div.away div.team__content div.team-container div.team-info span.short-name')->text()));
+        $away = new Team(trim($this->html->filter('div.sm-score div.home div.team__content div.team-container div.team-info span.short-name')->text()));
+        $home->logo = trim($this->html->filter('div.sm-score div.away div.team__content div.team-container div.team-info-logo a.logo picture img')->attr('src'));
+        $away->logo = trim($this->html->filter('div.sm-score div.home div.team__content div.team-container div.team-info-logo a.logo picture img')->attr('src'));
 
-        $time = $this->html->find('div.game-status span', 1)->{'data-date'};
-        $score_home = trim($this->html->find('div.sm-score div.away div.team__content div.score-container span', 0)->innertext);
-        $score_away = trim($this->html->find('div.sm-score div.home div.team__content div.score-container span', 0)->innertext);
+        $time = $this->html->filter('div.game-status span')->attr('data-date');
+        $score_home = trim($this->html->filter('div.sm-score div.away div.score-container span')->text());
+        $score_away = trim($this->html->filter('div.sm-score div.home div.score-container span')->text());
         $score = $score_home.' - '.$score_away;
 
-        $state = utf8_encode(trim($this->html->find('span.game-time', 0)->innertext));
-        $matchgoals = $this->html->find('div[id=custom-nav] div.game-details', 1);
-        $status = @$matchgoals->find('div.game-status', 0)->innertext;
-        $st = $this->html->find('div#gamepackage-game-information li.venue div', 0)->innertext;
+        $state = utf8_encode(trim($this->html->filter('span.game-time')->text()));
+        $st = $this->html->filter('div#gamepackage-game-information li.venue div')->eq(0)->text();
         $stadium = trim(substr($st, strpos($st, ':')+1));
 
         return new Game($home, $away, $time, $matchid, $score, $stadium, $state);
