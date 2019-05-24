@@ -80,8 +80,7 @@ class Espn
 
             $games = $fixture->parents()->filter('table.schedule')->eq($i);
             
-            $resp['games'] = $games->filter('tbody tr')->each(function(Crawler $game, $j) use ($league) {
-                //$league = $game->parents()->parents()->parents()->parents()->filter('h2.table-caption')->eq($i)->text();
+            $resp['games'] = $games->filter('tbody tr')->each(function(Crawler $game, $j) {
                 $home = new Team($game->filter('td a.team-name span')->first()->text());
                 $away = new Team($game->filter('td a.team-name span')->last()->text());
                 $time = $game->filter('td')->eq(2)->attr('data-date');
