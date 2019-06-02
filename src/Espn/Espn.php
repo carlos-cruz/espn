@@ -120,8 +120,12 @@ class Espn
         $score = $score_home.' - '.$score_away;
 
         $state = utf8_encode(trim($this->html->filter('span.game-time')->text()));
-        $st = $this->html->filter('div#gamepackage-game-information li.venue div')->eq(0)->text();
-        $stadium = trim(substr($st, strpos($st, ':')+1));
+        if ($this->html->filter('div#gamepackage-game-information li.venue div')->count()) {
+            $st = $this->html->filter('div#gamepackage-game-information li.venue div')->eq(0)->text();
+            $stadium = trim(substr($st, strpos($st, ':')+1));
+        }else{
+            $stadium = 'Unknown';
+        }
 
         return new Game($home, $away, $time, $matchid, $score, $stadium, $state);
     }
