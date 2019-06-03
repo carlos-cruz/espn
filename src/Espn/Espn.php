@@ -81,16 +81,22 @@ class Espn
             $games = $fixture->parents()->filter('table.schedule')->eq($i);
             
             $resp['games'] = $games->filter('tbody tr')->each(function(Crawler $game, $j) {
-                $home = new Team($game->filter('td a.team-name span')->first()->text());
-                $away = new Team($game->filter('td a.team-name span')->last()->text());
-                $time = $game->filter('td')->eq(2)->attr('data-date');
-                $espnid = (int) filter_var($game->filter('td span.record a')->eq(0)->attr('href'), FILTER_SANITIZE_NUMBER_INT);
-                $score = $game->filter('td span.record a')->first()->text();
-                $stadium = ($game->filter('td.schedule-location')->count()) ? $game->filter('td.schedule-location')->first()->text():null;
+                if ($game->filter('td a.team-name span')->count() > 0) {
+                    $home = new Team($game->filter('td a.team-name span')->first()->text());
+                    $away = new Team($game->filter('td a.team-name span')->last()->text());
+                    $time = $game->filter('td')->eq(2)->attr('data-date');
+                    $espnid = (int) filter_var($game->filter('td span.record a')->eq(0)->attr('href'), FILTER_SANITIZE_NUMBER_INT);
+                    $score = $game->filter('td span.record a')->first()->text();
+                    $stadium = ($game->filter('td.schedule-location')->count()) ? $game->filter('td.schedule-location')->first()->text():null;
 
-                $game = new Game($home, $away, $time, $espnid, $score, $stadium);
-                return $game->toArray();
+                    $game = new Game($home, $away, $time, $espnid, $score, $stadium);
+                    return $game->toArray();
+                }
             });
+
+            //Clean null games
+            $resp['games'] = array_values(array_filter($resp['games']));
+
             return $resp;
         });
 
